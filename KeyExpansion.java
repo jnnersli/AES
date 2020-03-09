@@ -72,7 +72,62 @@ public class KeyExpansion{
         
         return (short) sbox[row][col];
     }
+    //Performs the subBytes step in the AES algorithm, this
+    //switches each entry with its corresponding entry in the
+    //sbox matrix.
+    static short[][] subBytes(short[][] mtxEntry){
 
+        for(int i = 0 ; i < mtxEntry.length ; i++){
+            for(int j = 0 ; j < mtxEntry.length ; j++)
+                mtxEntry[i][j] = s(mtxEntry[i][j]);
+
+        }
+
+        return mtxEntry;
+
+    }
+    /*
+        sbMatrix means sub bytes matrix which is the matrix that is the
+        result from the previous step. The shift rows step does not move
+        the first row at all, the second row it moves one time to the left
+        circularly, and the second and third row are shifted two and three times
+        respectively.
+    */
+    static short[][] shiftRows(short[][] sbMatrix){
+        //I know theres an easier way to do this, but this is
+        //just what I thought of at the time.
+        for(int i = 0 ; i < sbMatrix.length ; i++){
+            
+            if(i != 3)
+                sbMatrix[1][i]=sbMatrix[1][i+1];
+            else{
+                sbMatrix[1][i]=sbMatrix[1][0];
+            }
+    
+        }
+        for(int i = 0 ; i < sbMatrix.length ; i++){
+            
+            if(i <= 1)
+                sbMatrix[2][i]=sbMatrix[2][i+2];
+            else if( i ==2){
+                sbMatrix[2][i]=sbMatrix[2][0];
+            }
+            else if(i ==3){
+                sbMatrix[2][i]=sbMatrix[2][1];
+
+            }
+    
+        }
+        //haha
+        sbMatrix[3][0]=sbMatrix[3][3];
+        sbMatrix[3][1]=sbMatrix[3][0];
+        sbMatrix[3][2]=sbMatrix[3][1];
+        sbMatrix[3][3]=sbMatrix[3][2];
+
+
+        return sbMatrix;
+
+    }
 
     /*  
         Performs a one-byte circular left shift on a word.
@@ -90,38 +145,109 @@ public class KeyExpansion{
     }
 
     /*
+        Mix column uses matrix multiplication with each column
+        using a predefined matrix given by
+        2 3 1 1
+        1 2 3 1
+        1 1 2 3
+        3 1 1 2
+
+    */
+    static short[] mixColumn(short[] column){
+        short[][] mixMtx =  new short[][]{{2,3,1,1},
+                            {1,2,3,1},
+                            {1,1,2,3},
+                            {3,1,1,2}};
+        short columnSum=0;
+        short[] returnArray= new short[4];
+        //matrix multiplication: note only two loops rather than the
+        //usual three because we are operating solely on columns.
+        for(int i = 0 ; i < mixMtx[0].length ; i++){
+            for(int j = 0 ; j < mixMtx[0].length ; j++){
+
+                columnSum+=mixMtx[i][j]*column[j];
+
+            }   
+            returnArray[i]=columnSum;
+            columnSum=0;
+        }
+
+        return returnArray;
+    }
+    /*
+        addRoundKey performs XOR operation with 
+    */
+    static short[][] addRoundKey(short[] key, short[][] mtx){
+
+        short[][] roundKey = new short[4][4];
+        short[][] returnMtx = new short[4][4];
+        
+        for(int i = 0 ; i < roundKey.length; i++){
+            for(int j = 0 ; j < roundKey.length; j++){
+
+                roundKey[i][j]=keyExpansion10(key)[i][j];
+
+            }
+        }
+
+        
+        for(int i = 0 ; i < roundKey.length; i++){
+            for( int j = 0 ; j < roundKey.length; j++){
+                System.out.println(mtx[i][j]);
+                System.out.println(roundKey[i][j]);
+                returnMtx[j][i]=(short)(mtx[i][j] ^ roundKey[i][j]);
+            }
+
+        }
+        return returnMtx;
+
+
+    }
+
+    /*
         The AES key expansion algorithm takes as input a four-word (16-byte) key 
         and produces a linear array of 44 words (176 bytes).
     */
     static short[][] keyExpansion10(short[] key){
-        short[][] w = new short[44][4];  // array of 44 words (4 bytes)
+        short some;//temp 
+         short[][] w = new short[44][4];  // array of 44 words (4 bytes)
         short[] temp = new short[4];  // temp words
         
         //  The key is copied into the first four words of the expanded key.
         for(int i = 0; i < 4; i++) {
             for(int j = 0; j < 4; j++) {
+         
                 w[i][j] = key[4*i+j];
             }
-        }
+        }//This works, which means that something after 
         
         //  The remainder of the expanded key is filled in four words at a time.
         for(int i = 4; i < w.length; i++) {
             //  Each added word w[i] depends on the immediately preceding word, 
             //  w[i  - 1], and the word four positions back, w[i - 4].
-            temp = w[i-1];
+            
+            for( int p = 0; p < temp.length ; p++){
+
+                temp[p]=w[i-1][p];
+
+            }
             
             //  For a word whose position in the w array is a multiple of 4, 
             //  a more complex function is used.
             if(i % 4 == 0) {
                 for(int j = 0; j < temp.length; j++) {
-                    temp[j] = subword(rotWord(temp[j])) (|) RCon[i/4][j];
+                   
+                w[i][j] = (short)(w[i-4][j] ^ subWord(rotWord(temp))[j] ^ RCon[(i-4)/4][j]);
+               
+              //     w[i][j]= temp[j];
                 }
             }
             //In three out of four cases, a simple XOR is used.
             else {
                 for(int j = 0; j < temp.length; j++) {
-                    w[i][j] = w[i-4][j] (|) temp[j];
+                    w[i][j] = (short)(w[i-4][j] ^ temp[j]);
                 }
+            
             }
         }
         
