@@ -96,36 +96,33 @@ public class KeyExpansion{
     static short[][] shiftRows(short[][] sbMatrix){
         //I know theres an easier way to do this, but this is
         //just what I thought of at the time.
-        for(int i = 0 ; i < sbMatrix.length ; i++){
-            
-            if(i != 3)
-                sbMatrix[1][i]=sbMatrix[1][i+1];
-            else{
-                sbMatrix[1][i]=sbMatrix[1][0];
-            }
-    
-        }
-        for(int i = 0 ; i < sbMatrix.length ; i++){
-            
-            if(i <= 1)
-                sbMatrix[2][i]=sbMatrix[2][i+2];
-            else if( i ==2){
-                sbMatrix[2][i]=sbMatrix[2][0];
-            }
-            else if(i ==3){
-                sbMatrix[2][i]=sbMatrix[2][1];
-
-            }
-    
-        }
+        short[][] copyMatrix= new short[4][4];
+   
         //haha
-        sbMatrix[3][0]=sbMatrix[3][3];
-        sbMatrix[3][1]=sbMatrix[3][0];
-        sbMatrix[3][2]=sbMatrix[3][1];
-        sbMatrix[3][3]=sbMatrix[3][2];
+        
+        copyMatrix[0][0]=sbMatrix[0][0];
+        copyMatrix[0][1]=sbMatrix[0][1];
+        copyMatrix[0][2]=sbMatrix[0][2];
+        copyMatrix[0][3]=sbMatrix[0][3];
+
+        copyMatrix[1][0]=sbMatrix[1][1];
+        copyMatrix[1][1]=sbMatrix[1][2];
+        copyMatrix[1][2]=sbMatrix[1][3];
+        copyMatrix[1][3]=sbMatrix[1][0];
 
 
-        return sbMatrix;
+        copyMatrix[2][0]=sbMatrix[2][2];
+        copyMatrix[2][1]=sbMatrix[2][3];
+        copyMatrix[2][2]=sbMatrix[2][0];
+        copyMatrix[2][3]=sbMatrix[2][1];
+
+        copyMatrix[3][0]=sbMatrix[3][3];
+        copyMatrix[3][1]=sbMatrix[3][0];
+        copyMatrix[3][2]=sbMatrix[3][1];
+        copyMatrix[3][3]=sbMatrix[3][2];
+
+
+        return copyMatrix;
 
     }
 

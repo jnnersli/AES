@@ -9,7 +9,8 @@ public class NewDriver{
 
 		short[][] keyMtx = keyExpansionTest();
 		short[][] addedMtx = addRoundKeyTest(key,plainText);
-		subBytesTest(addedMtx);
+		short[][] someMtx = subBytesTest(addedMtx);
+		shiftRowTest(someMtx);
 
 	}
 
@@ -74,6 +75,25 @@ public class NewDriver{
 
 
 
+	}
+	public static short[][] shiftRowTest(short[][] subbdedMtx){
+
+		short[][] shiftedMtx = KeyExpansion.shiftRows(subbdedMtx);
+
+				System.out.println("***********************");
+		for(int i = 0 ; i < shiftedMtx.length; i++){
+
+			for(int j = 0 ; j < shiftedMtx.length; j++){
+
+				System.out.print(shiftedMtx[i][j]+",");
+
+
+			}
+			System.out.println();
+
+
+		}
+		return shiftedMtx;
 	}
 
 }
